@@ -1,6 +1,6 @@
 var mongoose = require('mongoose');
 
-var Firm = mongoose.model('Firm', {
+var FirmSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true,
@@ -14,7 +14,10 @@ var Firm = mongoose.model('Firm', {
     _creator: {
         type: mongoose.Schema.Types.ObjectId,
         required: true
-    }
+    },
+    sms: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Sms' }]
 });
+
+var Firm = mongoose.model('Firm', FirmSchema);
 
 module.exports = {Firm};

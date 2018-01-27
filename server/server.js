@@ -47,7 +47,7 @@ app.get('/firm/:id', authenticate, (req, res) => {
             message: 'ID is not valid'
         })
     }
-    Firm.find({
+    Firm.findOne({
         _creator: req.user._id,
         _id: id
     }).then((firm) => {
@@ -85,18 +85,37 @@ app.delete('/firm/:id', authenticate, (req, res) => {
     });
 });
 
-// app.get('/firm/:id/allsms', authenticate, (req, res) => {
-//     let id = req.params.id;
-//     if (!ObjectID.isValid(id)) {
-//         return res.status(400).send({
-//             message: 'ID is not valid'
-//         });
-//     };
 
-//     Firm.find({
+//GETS ALL SMS FOR THE SPECIFIC FIRM
+app.get('/firm/:id/allsms', authenticate, (req, res) => {
+    let id = req.params.id;
+    let allSmsById = [];
+    if (!ObjectID.isValid(id)) {
+        return res.status(400).send({
+            message: 'ID is not valid'
+        });
+    };
+    Firm.findOne({
+        _creator: req.user._id,
+        _id: id
+    }).then((firm) => {
+        if (!firm) {
+            return res.status(400).send();
+        };
+        Sms.findSmsByPhoneNumber(firm.number)
+            .then((sms) => {
+                if (!sms) {
+                    return res.status(400).send({
+                        message: 'No sms found for this firm.'
+                    })
+                };
 
-//     })
-// });
+                res.send(sms);
+            });
+        }, (e) => {
+            res.status(400).send(e);
+        });
+});
 
 app.post('/sms', authenticate, (req, res) => {
     var sms = new Sms({
@@ -134,17 +153,29 @@ app.get('/sms/:id', authenticate, (req, res) => {
     Sms.findOne({
         _id: id,
         _creator: req.user._id
-    }).then((sms) => {
+    })
+    .then((sms) => {
         if (!sms) {
             return res.status(404).send({
-                message: 'Sms could not found.'
+                message: 'Sms could not be found.'
             });
         }
         res.send({sms});
     }, (e) => {
-        res.status(400).send()
-    })
-})
+        res.status(400).send(e);
+    });
+});
+
+app.get('/smsn/:number', authenticate, (req, res) => {
+    let pNumber = req.params.number;
+    
+    Sms.findSmsByPhoneNumber(pNumber)
+        .then((sms) => {
+            res.send({sms});
+        }, (e) => {
+            res.status(400).send(e);
+        });
+});
 
 app.delete('/sms/:id', authenticate, (req, res) => {
     let id = req.params.id;

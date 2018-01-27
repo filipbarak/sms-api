@@ -1,6 +1,6 @@
 var mongoose = require('mongoose');
 
-var Sms = mongoose.model('Sms', {
+var SmsSchema = new mongoose.Schema({
     title: {
         type: String,
         required: true,
@@ -18,9 +18,22 @@ var Sms = mongoose.model('Sms', {
         type: mongoose.Schema.Types.ObjectId,
         required: true
     },
-    _firmId: {
-        type: mongoose.Schema.Types.ObjectId,
-    }
+    firms: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Firm' }]
 });
+
+SmsSchema.statics.findSmsByPhoneNumber = function(number) {
+    var Sms = this;
+    
+    return Sms.find({
+        numberTo: number
+    }).then((sms) => {
+        if (!sms) {
+           return Promise.reject();
+        }
+       return Promise.resolve(sms);
+    })
+}
+
+var Sms = mongoose.model('Sms', SmsSchema);
 
 module.exports = {Sms};
