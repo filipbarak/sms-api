@@ -10,6 +10,7 @@ var {Firm} = require('./models/firm')
 var {Sms} = require('./models/sms');
 var {User} = require('./models/user');
 var {authenticate} = require('./middleware/authenticate');
+var {sendMessage} = require('./twilio/twilio');
 
 var app = express();
 const port = process.env.PORT;
@@ -237,6 +238,21 @@ app.delete('/users/me/token', authenticate, (req, res) => {
     }, () => {
         res.status(400).send();
     })
+});
+
+app.post('/sms/send', authenticate, (req, res) => {
+    var body = _.pick(req.body, ['message', 'numberTo']);
+
+    sendMessage(body.message, body.numberTo).then((message) => {
+        if (!message) {
+            return res.status(400).send();
+        }
+        res.send({
+            message: message.body
+        });
+    }, (e) => {
+        res.status(400).send(e);
+    });
 });
 
 app.listen(port, () => {

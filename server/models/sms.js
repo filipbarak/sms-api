@@ -10,10 +10,10 @@ var SmsSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    numberTo: {
+    numberTo: [{
         type: String,
         required: true
-    },  
+    }],  
     _creator: {
         type: mongoose.Schema.Types.ObjectId,
         required: true
