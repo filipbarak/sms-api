@@ -24,10 +24,21 @@ app.post('/firm', authenticate, (req, res) => {
         _creator: req.user._id
     });
 
-    firm.save().then((firm) => {
-        res.send(firm);
-    }, (e) => {
-        res.status(400).send(e);
+    Firm.findOne({
+        name: req.body.name,
+        number: req.body.number
+    }).then(firm => {
+        if (firm) {
+            return res.status(400).send({
+                message: 'Firm with that name or number already exists.'
+            })
+        }
+        firm.save().then((firm) => {
+            res.send(firm);
+        }, (e) => {
+            res.status(400).send(e);
+        });
+
     });
 });
 
@@ -125,7 +136,6 @@ app.post('/sms', authenticate, (req, res) => {
         numberTo: req.body.numberTo,
         _creator: req.user._id // id of the user from the authenticate middleware
     });
-
     sms.save().then((sms) => {
         res.send(sms);
     }, (e) => {
@@ -206,17 +216,31 @@ app.post('/users', (req, res) => {
     let body = _.pick(req.body, ['email', 'password']);
     let newUser = new User(body);
 
-    newUser.save().then(() => {
+    User.findOne({
+        email: body.email
+    }).then((user) => {
+        if (user) {
+            return res.status(400).send({
+                message: 'User with that email already exists.'
+            });
+        }
+        
+        newUser.save().then(() => {
         return newUser.generateAuthToken();
         // res.send(user);
-    }).then((token) => {
-        res.header('x-auth', token).send({
-            newUser,
-            'token': token
-        });
-    }).catch(e => {
-        res.status(400).send(e);
+         }).then((token) => {
+            res.header('x-auth', token).send({
+             newUser,
+                'token': token
+         });
+        }).catch(e => {
+         res.status(400).send({
+             message: 'Something went wrong with the registration.'
+            });
+         })       
     })
+
+   
 });
 
 app.get('/users/me', authenticate, (req, res) => {
@@ -228,7 +252,10 @@ app.post('/users/login', (req, res) => {
 
     User.findByCredentials(body.email, body.password).then((user) => {
         return user.generateAuthToken().then((token) => {
-            res.header('x-auth', token).send(user);
+            res.header('x-auth', token).send({
+                user,
+                'token': token
+            });
         });
     }).catch((e) => {
         res.status(400).send();
