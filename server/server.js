@@ -25,10 +25,9 @@ app.post('/firm', authenticate, (req, res) => {
     });
 
     Firm.findOne({
-        name: req.body.name,
         number: req.body.number
-    }).then(firm => {
-        if (firm) {
+    }).then(firmFound => {
+        if (firmFound) {
             return res.status(400).send({
                 message: 'Firm with that name or number already exists.'
             })
