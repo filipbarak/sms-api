@@ -24,10 +24,21 @@ app.post('/firm', authenticate, (req, res) => {
         _creator: req.user._id
     });
 
-    firm.save().then((firm) => {
-        res.send(firm);
-    }, (e) => {
-        res.status(400).send(e);
+    Firm.findOne({
+        name: req.body.name,
+        number: req.body.number
+    }).then(firm => {
+        if (firm) {
+            return res.status(400).send({
+                message: 'Firm with that name or number already exists.'
+            })
+        }
+        firm.save().then((firm) => {
+            res.send(firm);
+        }, (e) => {
+            res.status(400).send(e);
+        });
+
     });
 });
 
@@ -125,7 +136,6 @@ app.post('/sms', authenticate, (req, res) => {
         numberTo: req.body.numberTo,
         _creator: req.user._id // id of the user from the authenticate middleware
     });
-
     sms.save().then((sms) => {
         res.send(sms);
     }, (e) => {
