@@ -206,27 +206,28 @@ app.post('/users', (req, res) => {
     let body = _.pick(req.body, ['email', 'password']);
     let newUser = new User(body);
 
-    User.find({email: body.email}).then(user => {
+    User.findOne({
+        email: body.email
+    }).then((user) => {
         if (user) {
             return res.status(400).send({
                 message: 'User with that email already exists.'
-            })
-        };
-
+            });
+        }
+        
         newUser.save().then(() => {
-            return newUser.generateAuthToken();
-            // res.send(user);
-        }).then((token) => {
+        return newUser.generateAuthToken();
+        // res.send(user);
+         }).then((token) => {
             res.header('x-auth', token).send({
-                newUser,
+             newUser,
                 'token': token
-            });
+         });
         }).catch(e => {
-            res.status(400).send({
-                message: 'Something went wrong with the registration.'
+         res.status(400).send({
+             message: 'Something went wrong with the registration.'
             });
-        })
-
+         })       
     })
 
    
