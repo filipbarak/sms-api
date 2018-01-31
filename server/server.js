@@ -4,6 +4,7 @@ var express = require('express');
 var http = require('http');
 var bodyParser = require('body-parser');
 var socketIO = require('socket.io');
+var cors = require('cors');
 const {ObjectID} = require('mongodb');
 const _ = require('lodash');
 
@@ -19,6 +20,7 @@ var server = http.createServer(app);
 var io = socketIO(server);
 const port = process.env.PORT;
 
+app.use(cors());
 app.use(bodyParser.json())
 
 app.post('/firm', authenticate, (req, res) => {
