@@ -298,7 +298,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('add-sms', (sms) => {
-        io.emit('message', {type: 'new-sms', text: message});
+        io.emit('message', {type: 'new-sms', text: sms});
         console.log(sms);
     })
 });
