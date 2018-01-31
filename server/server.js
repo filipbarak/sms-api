@@ -1,7 +1,9 @@
 require('./config/config');
 
 var express = require('express');
+var http = require('http');
 var bodyParser = require('body-parser');
+var socketIO = require('socket.io');
 const {ObjectID} = require('mongodb');
 const _ = require('lodash');
 
@@ -13,6 +15,8 @@ var {authenticate} = require('./middleware/authenticate');
 var {sendMessage} = require('./twilio/twilio');
 
 var app = express();
+var server = http.createServer(app);
+var io = socketIO(server);
 const port = process.env.PORT;
 
 app.use(bodyParser.json())
@@ -284,7 +288,20 @@ app.post('/sms/send', authenticate, (req, res) => {
     });
 });
 
-app.listen(port, () => {
+io.on('connection', (socket) => {
+    console.log('user connected');
+
+    socket.on('disconnect', function() {
+        console.log('user disconnected');
+    });
+
+    socket.on('add-sms', (sms) => {
+        io.emit('message', {type: 'new-sms', text: message});
+        console.log(sms);
+    })
+});
+
+server.listen(port, () => {
     console.log(`Started up at port ${port}`);
 });
 

@@ -22,6 +22,7 @@
     "lodash": "^4.17.4",
     "mongodb": "^2.2.33",
     "mongoose": "^4.5.9",
+    "socket.io": "^2.0.4",
     "twilio": "^3.11.1",
     "validator": "^9.2.0"
   },
