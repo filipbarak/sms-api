@@ -5,6 +5,7 @@ var http = require('http');
 var bodyParser = require('body-parser');
 var socketIO = require('socket.io');
 var cors = require('cors');
+var jwtAuth = require('socketio-jwt-auth');
 const {ObjectID} = require('mongodb');
 const _ = require('lodash');
 
@@ -21,7 +22,13 @@ var io = socketIO(server);
 const port = process.env.PORT;
 
 app.use(cors());
-app.use(bodyParser.json())
+app.use(bodyParser.json());
+io.use(jwtAuth.authenticate({
+    secret: process.env.JWT_SECRET
+}, function(payload, done) {
+    console.log(payload);
+    return done(null, payload);
+}));
 
 app.post('/firm', authenticate, (req, res) => {
     var firm = new Firm({
@@ -291,7 +298,8 @@ app.post('/sms/send', authenticate, (req, res) => {
 });
 
 io.on('connection', (socket) => {
-    console.log('user connected');
+    console.log('Authentication passed!');
+
 
     socket.on('disconnect', function() {
         console.log('user disconnected');
