@@ -32,7 +32,8 @@ app.post('/firm', authenticate, (req, res) => {
     });
 
     Firm.findOne({
-        number: req.body.number
+        number: req.body.number,
+        _creator: req.user._id
     }).then(firmFound => {
         if (firmFound) {
             return res.status(400).send({
