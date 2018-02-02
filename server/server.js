@@ -327,7 +327,9 @@ io.on('connection', (socket) => {
     });
 
     socket.on('add-sms', (sms) => {
-        io.emit('message', {type: 'new-sms', text: sms});
+        let key = sms[1];
+        let emitEvent = 'message'+key;
+        io.emit(emitEvent, {type: 'new-sms', text: sms});
         console.log(sms);
     })
 });
