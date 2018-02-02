@@ -12,6 +12,7 @@ const _ = require('lodash');
 var {mongoose} = require('./db/mongoose');
 var {Firm} = require('./models/firm')
 var {Sms} = require('./models/sms');
+var {FirmGroup} = require('./models/firmgroup')
 var {User} = require('./models/user');
 var {authenticate} = require('./middleware/authenticate');
 var {sendMessage} = require('./twilio/twilio');
@@ -106,7 +107,7 @@ app.delete('/firm/:id', authenticate, (req, res) => {
 });
 
 
-//GETS ALL SMS FOR THE SPECIFIC FIRM
+//SMS
 app.get('/firm/:id/allsms', authenticate, (req, res) => {
     let id = req.params.id;
     let allSmsById = [];
@@ -241,6 +242,7 @@ app.patch('/sms/:id', authenticate, (req, res) => {
     })
 });
 
+//USERS
 app.post('/users', (req, res) => {
     let body = _.pick(req.body, ['email', 'password']);
     let newUser = new User(body);
@@ -316,6 +318,83 @@ app.post('/sms/send', authenticate, (req, res) => {
     }, (e) => {
         res.status(400).send(e);
     });
+});
+
+//FIRMGROUP
+
+app.post('/firmgroup', authenticate, (req, res) => {
+    let group = new FirmGroup({
+        title: req.body.title,
+        firms: req.body.firms,
+        _creator: req.user._id
+    });
+
+    group.save().then(group => {
+        res.send(group);
+    }).catch(e => {
+        res.status(400).send({
+            message: 'Could not create group',
+            e
+        })
+    })
+});
+
+app.get('/firmgroup', authenticate, (req, res) => {
+    FirmGroup.find({_creator: req.user._id }).then(firmgroup => {
+        if (!firmgroup) {
+            return res.status(400).send({
+                message: 'Group not found'
+            })
+        }
+        res.send(firmgroup);
+    }).catch(e => {
+        res.status(400).send({
+            message: "There was a problem reaching the server",
+            e
+        });
+    });
+});
+
+app.get('/firmgroup/:id', authenticate, (req, res) => {
+    let id = req.params.id;
+    if (!ObjectID.isValid(id)) {
+        return res.status(400).send({
+            message: 'ID is not valid'
+        })
+    }
+    FirmGroup.findById(id).then(firmgroup => {
+        if (!firmgroup) {
+            return res.status(400).send({
+                message: 'Group not found'
+            })
+        }
+        res.send(firmgroup);
+    }).catch(e => {
+        res.status(400).send({
+            message: "There was a problem reaching the server",
+            e
+        });
+    });
+});
+
+app.patch('/firmgroup/:id', authenticate, (req, res) => {
+    let id = req.params.id;
+    let body = _.pick(req.body, ['title', 'firms']);
+     if (!ObjectID.isValid(id)) {
+        return res.status(400).send({
+            message: 'ID is not valid'
+        })
+    }
+    FirmGroup.findByIdAndUpdate(id, {$set: body}, {new: true}).then(firmgroup => {
+        if (!firmgroup) {
+            return res.status(404).send({
+                message: 'Could not find that FirmGroup'
+            })
+        }
+        res.send(firmgroup);
+    }).catch(e => {
+        res.status(400).send(e);
+    })
 });
 
 io.on('connection', (socket) => {
