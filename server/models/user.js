@@ -3,6 +3,7 @@ const validator = require('validator');
 const jwt = require('jsonwebtoken');
 const _ = require('lodash');
 const bcrypt = require('bcryptjs');
+const randomize = require('randomatic');
 
 var UserSchema = new mongoose.Schema({
     email: {
@@ -30,7 +31,11 @@ var UserSchema = new mongoose.Schema({
             type: String,
             required: true
         }
-    }]
+    }],
+    uniqueKey: {
+        type: String,
+        required: true
+    }
 });
 
 UserSchema.methods.toJSON = function () {
@@ -104,6 +109,8 @@ UserSchema.statics.findByCredentials = function (email, password) {
 
 UserSchema.pre('save', function (next) {
     var user = this;
+
+    user.uniqueKey = randomize('Aa0', 5);
 
     if (user.isModified('password')) {
         bcrypt.genSalt(10, (err, salt) => {

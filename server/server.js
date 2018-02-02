@@ -5,6 +5,7 @@ var http = require('http');
 var bodyParser = require('body-parser');
 var socketIO = require('socket.io');
 var cors = require('cors');
+var randomize = require('randomatic');
 const {ObjectID} = require('mongodb');
 const _ = require('lodash');
 
@@ -237,7 +238,7 @@ app.patch('/sms/:id', authenticate, (req, res) => {
         res.send({sms});
     }).catch(e => {
         res.status(400).send(e);
-    });
+    })
 });
 
 app.post('/users', (req, res) => {
@@ -252,14 +253,16 @@ app.post('/users', (req, res) => {
                 message: 'User with that email already exists.'
             });
         }
-        
+
+        newUser.uniqueKey = randomize('Aa0', 5);
         newUser.save().then(() => {
         return newUser.generateAuthToken();
         // res.send(user);
          }).then((token) => {
             res.header('x-auth', token).send({
              newUser,
-                'token': token
+            'token': token,
+            'key': newUser.uniqueKey
          });
         }).catch(e => {
          res.status(400).send({
@@ -279,10 +282,12 @@ app.post('/users/login', (req, res) => {
     var body = _.pick(req.body, ['email', 'password']);
 
     User.findByCredentials(body.email, body.password).then((user) => {
+        user.uniqueKey = randomize('Aa0', 5);
         return user.generateAuthToken().then((token) => {
             res.header('x-auth', token).send({
                 user,
-                'token': token
+                'token': token,
+                'key': user.uniqueKey
             });
         });
     }).catch((e) => {
