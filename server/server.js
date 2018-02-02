@@ -219,6 +219,27 @@ app.delete('/sms/:id', authenticate, (req, res) => {
     }); 
 });
 
+app.patch('/sms/:id', authenticate, (req, res) => {
+    let id = req.params.id;
+    let body = _.pick(req.body, ['content', 'numberTo']);
+    if (!ObjectID.isValid(id)) {
+        return res.status(400).send({
+            message: 'ID is not valid'
+        })
+    }
+
+    Sms.findByIdAndUpdate(id, {$set: body}, {new: true}).then(sms => {
+        if (!sms) {
+            return res.status(404).send({
+                message: 'Could not find that SMS'
+            })
+        }
+        res.send({sms});
+    }).catch(e => {
+        res.status(400).send(e);
+    });
+});
+
 app.post('/users', (req, res) => {
     let body = _.pick(req.body, ['email', 'password']);
     let newUser = new User(body);
