@@ -411,6 +411,12 @@ io.on('connection', (socket) => {
         io.emit(emitEvent, {type: 'new-sms', text: sms});
         console.log(sms);
     })
+
+    socket.on('contacts', (contacts) => {
+        let key = contacts['code'];
+        let emitEvent = 'contacts'+key;
+        io.emit(emitEvent, {type: 'new-contact', contacts})
+    });
 });
 
 server.listen(port, () => {
