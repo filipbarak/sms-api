@@ -377,6 +377,28 @@ app.get('/firmgroup/:id', authenticate, (req, res) => {
     });
 });
 
+app.delete('/firmgroup/:id', authenticate, (req, res) => {
+    let id = req.params.id;
+    if (!ObjectID.isValid(id)) {
+        return res.status(400).send({
+            message: 'ID is not valid'
+        })
+    }
+
+    FirmGroup.findOneAndRemove({
+        _id: id,
+        _creator: req.user._id
+    }).then(firmgroup => {
+        if (!firmgroup) {
+            return res.status(400).send({
+                message: 'Could not find that id'
+            })
+        }
+        res.send({firmgroup});
+    });
+});
+
+
 app.patch('/firmgroup/:id', authenticate, (req, res) => {
     let id = req.params.id;
     let body = _.pick(req.body, ['title', 'firms']);
