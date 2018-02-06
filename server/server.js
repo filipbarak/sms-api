@@ -413,6 +413,7 @@ io.on('connection', (socket) => {
     })
 
     socket.on('contacts', (contacts) => {
+        console.dir(contacts, 'Contacts');
         let key = contacts['code'];
         let emitEvent = 'contacts'+key;
         io.emit(emitEvent, {type: 'new-contact', contacts})
