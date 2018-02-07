@@ -440,6 +440,16 @@ io.on('connection', (socket) => {
         let emitEvent = 'contacts'+key;
         io.emit(emitEvent, {type: 'new-contact', contacts})
     });
+
+    socket.on('smsSent', (result) => {
+        console.log(result);
+        let key = result['code'];
+        let emitEvent = 'smsSent'+key;
+        io.emit(emitEvent, {
+            type: 'smsSent',
+            isSuccess: result['isSuccess']
+        })
+    });
 });
 
 server.listen(port, () => {
