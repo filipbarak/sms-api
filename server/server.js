@@ -51,6 +51,29 @@ app.post('/firm', authenticate, (req, res) => {
     });
 });
 
+//Use this only to sync contacts from Phone.
+app.post('/firms', authenticate, (req, res) => {
+    let firms = req.body.firms;
+    let firmsToSave = [];
+    firms.map(firm => {
+        firm = new Firm({
+            name: firm.name,
+            number: firm.number,
+            _creator: req.user._id
+        });
+        firmsToSave.push(firm);
+    });
+
+    Firm.insertMany(firmsToSave).then(result => {
+        console.log(result);
+        res.send(firms);
+    }, e => {
+        res.status(400).send({
+            message: 'Something went wrong.'
+        })
+    });
+});
+
 app.get('/firms', authenticate, (req, res) => {
     Firm.find({
         _creator: req.user._id
