@@ -52,7 +52,7 @@ app.post('/firm', authenticate, (req, res) => {
 });
 
 //Use this only to sync contacts from Phone.
-app.post('/firms', authenticate, (req, res) => {
+app.post('/firmsmany', authenticate, (req, res) => {
     let firms = req.body.firms;
     let firmsToSave = [];
     firms.map(firm => {
