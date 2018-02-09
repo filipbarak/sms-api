@@ -35,6 +35,14 @@ var UserSchema = new mongoose.Schema({
     uniqueKey: {
         type: String,
         required: true
+    },
+    isVerified: {
+        type: Boolean,
+        required: true
+    },
+    tempHash: {
+        type: String,
+        required: false
     }
 });
 

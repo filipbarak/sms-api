@@ -8,6 +8,8 @@ var cors = require('cors');
 var randomize = require('randomatic');
 const {ObjectID} = require('mongodb');
 const _ = require('lodash');
+const nodemailer = require('nodemailer');
+var smtpTransport = require('nodemailer-smtp-transport');
 
 var {mongoose} = require('./db/mongoose');
 var {Firm} = require('./models/firm')
@@ -21,9 +23,80 @@ var app = express();
 var server = http.createServer(app);
 var io = socketIO(server);
 const port = process.env.PORT;
+var rand, mailOptions, host, link;
 
 app.use(cors());
 app.use(bodyParser.json());
+
+
+let transporter = nodemailer.createTransport(smtpTransport({
+    name: process.env.EMAIL_SENDER_NAME,
+    host: process.env.EMAIL_SENDER_HOST,
+    port: process.env.EMAIL_SENDER_PORT,
+    secure: false,
+    auth: {
+        user: process.env.SENDER_EMAIL,
+        pass: process.env.SENDER_PASSWORD
+    },
+    tls: {
+        rejectUnauthorized: false
+    },
+    debug: true
+}));
+
+var sendMail = (req, res, id) => {
+    host = req.get('host');
+    link = `http://${host}/verify?id=${rand}&sc=${id}`;
+    mailOptions = {
+        from: process.env.SENDER_EMAIL,
+        to: [req.body.email],
+        subject: 'Верифицирајте го вашиот профил',
+        html: `Кликнете на линкот за да го верифицирате вашиот e-mail. <br>
+        <a href=${link}>Кликнете тука.</a>`
+    };
+    console.dir(mailOptions);
+    transporter.sendMail(mailOptions, (err, response) => {
+        if (err) {
+            console.log(err, 'Error?');
+            return res.status(400).send(err);
+        }
+        res.status(200).send();
+    });
+}
+
+app.post('/sendemail', (req, res) => {
+    
+
+});
+
+app.get('/verify', (req, res) => {
+    console.log(rand, 'MAND');
+    let id = req.query.sc;
+    console.log(id);
+    if ((`${req.protocol}://${req.get('host')}`) == (`http://${host}`)) {
+        if (req.query.id == rand) {
+            console.log('Email is verified')
+            res.redirect(process.env.FRONTEND_URL);
+            User.findByIdAndUpdate(id, 
+                {$set: {
+                    isVerified: true
+                }, $unset: {
+                    tempHash: 1
+                }}, 
+                {new: true}).then(user => {
+                console.log(user, 'UPDATED');
+                });
+        }
+        else {
+            console.log("Email was not verified");
+            res.status(400).send();
+
+        }
+    }
+    else {
+        res.status(400).send();
+    }
+});
 
 
 app.post('/firm', authenticate, (req, res) => {
@@ -269,6 +342,7 @@ app.patch('/sms/:id', authenticate, (req, res) => {
 app.post('/users', (req, res) => {
     let body = _.pick(req.body, ['email', 'password']);
     let newUser = new User(body);
+    rand = randomize('A0', 16);
 
     User.findOne({
         email: body.email
@@ -280,6 +354,8 @@ app.post('/users', (req, res) => {
         }
 
         newUser.uniqueKey = randomize('Aa0', 5);
+        newUser.isVerified = false;
+        newUser.tempHash = rand;
         newUser.save().then(() => {
         return newUser.generateAuthToken();
         // res.send(user);
@@ -289,6 +365,7 @@ app.post('/users', (req, res) => {
             'token': token,
             'key': newUser.uniqueKey
          });
+         sendMail(req, res, newUser._id);
         }).catch(e => {
          res.status(400).send({
              message: 'Something went wrong with the registration.'
@@ -307,6 +384,11 @@ app.post('/users/login', (req, res) => {
     var body = _.pick(req.body, ['email', 'password']);
 
     User.findByCredentials(body.email, body.password).then((user) => {
+        if (!user.isVerified) {
+            return res.status(401).send({
+                message: 'User is not verified'
+            });
+        }
         user.uniqueKey = randomize('Aa0', 5);
         return user.generateAuthToken().then((token) => {
             res.header('x-auth', token).send({
