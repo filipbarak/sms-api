@@ -48,7 +48,7 @@ var sendMail = (req, res, id) => {
     host = req.get('host');
     link = `http://${host}/verify?id=${rand}&sc=${id}`;
     mailOptions = {
-        from: process.env.SENDER_EMAIL,
+        from: `Верификација <${process.env.SENDER_EMAIL}>`,
         to: [req.body.email],
         subject: 'Верифицирајте го вашиот профил',
         html: `Кликнете на линкот за да го верифицирате вашиот e-mail. <br>
