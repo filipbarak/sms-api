@@ -361,9 +361,7 @@ app.post('/users', (req, res) => {
         // res.send(user);
          }).then((token) => {
             res.header('x-auth', token).send({
-             newUser,
-            'token': token,
-            'key': newUser.uniqueKey
+             newUser
          });
          sendMail(req, res, newUser._id);
         }).catch(e => {
