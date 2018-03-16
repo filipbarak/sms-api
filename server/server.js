@@ -433,6 +433,15 @@ app.post('/firmgroup', authenticate, (req, res) => {
         _creator: req.user._id
     });
 
+    FirmGroup.findOne({title: req.body.title})
+        .then(fg => {
+            if (fg) {
+                return res.status(400).send({
+                    'message': 'Group with that name already exists.'
+                });
+            }
+        });
+
     group.save().then(group => {
         res.send(group);
     }).catch(e => {
