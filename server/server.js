@@ -6,18 +6,18 @@ var bodyParser = require('body-parser');
 var socketIO = require('socket.io');
 var cors = require('cors');
 var randomize = require('randomatic');
-const {ObjectID} = require('mongodb');
+const { ObjectID } = require('mongodb');
 const _ = require('lodash');
 const nodemailer = require('nodemailer');
 var smtpTransport = require('nodemailer-smtp-transport');
 
-var {mongoose} = require('./db/mongoose');
-var {Firm} = require('./models/firm')
-var {Sms} = require('./models/sms');
-var {FirmGroup} = require('./models/firmgroup')
-var {User} = require('./models/user');
-var {authenticate} = require('./middleware/authenticate');
-var {sendMessage} = require('./twilio/twilio');
+var { mongoose } = require('./db/mongoose');
+var { Firm } = require('./models/firm')
+var { Sms } = require('./models/sms');
+var { FirmGroup } = require('./models/firmgroup')
+var { User } = require('./models/user');
+var { authenticate } = require('./middleware/authenticate');
+var { sendMessage } = require('./twilio/twilio');
 
 var app = express();
 var server = http.createServer(app);
@@ -65,7 +65,7 @@ var sendMail = (req, res, id) => {
 }
 
 app.post('/sendemail', (req, res) => {
-    
+
 
 });
 
@@ -77,14 +77,16 @@ app.get('/verify', (req, res) => {
         if (req.query.id == rand) {
             console.log('Email is verified')
             res.redirect(process.env.FRONTEND_URL);
-            User.findByIdAndUpdate(id, 
-                {$set: {
-                    isVerified: true
-                }, $unset: {
-                    tempHash: 1
-                }}, 
-                {new: true}).then(user => {
-                console.log(user, 'UPDATED');
+            User.findByIdAndUpdate(id,
+                {
+                    $set: {
+                        isVerified: true
+                    }, $unset: {
+                        tempHash: 1
+                    }
+                },
+                { new: true }).then(user => {
+                    console.log(user, 'UPDATED');
                 });
         }
         else {
@@ -151,7 +153,7 @@ app.get('/firms', authenticate, (req, res) => {
     Firm.find({
         _creator: req.user._id
     }).then((firms) => {
-        res.send({firms});
+        res.send({ firms });
     }, (e) => {
         res.status(400).send(e);
     })
@@ -173,7 +175,7 @@ app.get('/firm/:id', authenticate, (req, res) => {
                 message: 'Firm could not be found'
             });
         }
-        res.send({firm});
+        res.send({ firm });
     }, (e) => {
         res.status(400).send(e);
     });
@@ -196,7 +198,7 @@ app.delete('/firm/:id', authenticate, (req, res) => {
                 message: 'That firm does not exist'
             });
         }
-        res.send({firm});
+        res.send({ firm });
     }, (e) => {
         res.status(400).send(e);
     });
@@ -229,9 +231,9 @@ app.get('/firm/:id/allsms', authenticate, (req, res) => {
 
                 res.send(sms);
             });
-        }, (e) => {
-            res.status(400).send(e);
-        });
+    }, (e) => {
+        res.status(400).send(e);
+    });
 });
 
 app.post('/sms', authenticate, (req, res) => {
@@ -253,7 +255,7 @@ app.get('/allsms', authenticate, (req, res) => {
     Sms.find({
         _creator: req.user._id
     }).then((sms) => {
-        res.send({sms});
+        res.send({ sms });
     }, (e) => {
         res.status(400).send(e);
     })
@@ -271,24 +273,24 @@ app.get('/sms/:id', authenticate, (req, res) => {
         _id: id,
         _creator: req.user._id
     })
-    .then((sms) => {
-        if (!sms) {
-            return res.status(404).send({
-                message: 'Sms could not be found.'
-            });
-        }
-        res.send({sms});
-    }, (e) => {
-        res.status(400).send(e);
-    });
+        .then((sms) => {
+            if (!sms) {
+                return res.status(404).send({
+                    message: 'Sms could not be found.'
+                });
+            }
+            res.send({ sms });
+        }, (e) => {
+            res.status(400).send(e);
+        });
 });
 
 app.get('/smsn/:number', authenticate, (req, res) => {
     let pNumber = req.params.number;
-    
+
     Sms.findSmsByPhoneNumber(pNumber)
         .then((sms) => {
-            res.send({sms});
+            res.send({ sms });
         }, (e) => {
             res.status(400).send(e);
         });
@@ -311,11 +313,11 @@ app.delete('/sms/:id', authenticate, (req, res) => {
                 message: 'That id doesnt exist'
             })
         }
-        res.send({sms});
+        res.send({ sms });
 
     }, e => {
         res.status(400).send();
-    }); 
+    });
 });
 
 app.patch('/sms/:id', authenticate, (req, res) => {
@@ -327,13 +329,13 @@ app.patch('/sms/:id', authenticate, (req, res) => {
         })
     }
 
-    Sms.findByIdAndUpdate(id, {$set: body}, {new: true}).then(sms => {
+    Sms.findByIdAndUpdate(id, { $set: body }, { new: true }).then(sms => {
         if (!sms) {
             return res.status(404).send({
                 message: 'Could not find that SMS'
             })
         }
-        res.send({sms});
+        res.send({ sms });
     }).catch(e => {
         res.status(400).send(e);
     })
@@ -358,21 +360,21 @@ app.post('/users', (req, res) => {
         newUser.isVerified = false;
         newUser.tempHash = rand;
         newUser.save().then(() => {
-        return newUser.generateAuthToken();
-        // res.send(user);
-         }).then((token) => {
+            return newUser.generateAuthToken();
+            // res.send(user);
+        }).then((token) => {
             res.header('x-auth', token).send({
-             newUser
-         });
-         sendMail(req, res, newUser._id);
-        }).catch(e => {
-         res.status(400).send({
-             message: 'Something went wrong with the registration.'
+                newUser
             });
-         })       
+            sendMail(req, res, newUser._id);
+        }).catch(e => {
+            res.status(400).send({
+                message: 'Something went wrong with the registration.'
+            });
+        })
     })
 
-   
+
 });
 
 app.get('/users/me', authenticate, (req, res) => {
@@ -433,27 +435,27 @@ app.post('/firmgroup', authenticate, (req, res) => {
         _creator: req.user._id
     });
 
-    FirmGroup.findOne({title: req.body.title})
+    FirmGroup.findOne({ title: req.body.title })
         .then(fg => {
             if (fg) {
                 return res.status(400).send({
-                    'message': 'Group with that name already exists.'
+                    'error': 'Group with that name already exists.'
                 });
             }
-        });
 
-    group.save().then(group => {
-        res.send(group);
-    }).catch(e => {
-        res.status(400).send({
-            message: 'Could not create group',
-            e
-        })
-    })
+            group.save().then(group => {
+                res.send(group);
+            }).catch(e => {
+                res.status(400).send({
+                    message: 'Could not create group',
+                    e
+                })
+            })
+        });
 });
 
 app.get('/firmgroup', authenticate, (req, res) => {
-    FirmGroup.find({_creator: req.user._id }).then(firmgroup => {
+    FirmGroup.find({ _creator: req.user._id }).then(firmgroup => {
         if (!firmgroup) {
             return res.status(400).send({
                 message: 'Group not found'
@@ -507,7 +509,7 @@ app.delete('/firmgroup/:id', authenticate, (req, res) => {
                 message: 'Could not find that id'
             })
         }
-        res.send({firmgroup});
+        res.send({ firmgroup });
     });
 });
 
@@ -515,12 +517,12 @@ app.delete('/firmgroup/:id', authenticate, (req, res) => {
 app.patch('/firmgroup/:id', authenticate, (req, res) => {
     let id = req.params.id;
     let body = _.pick(req.body, ['title', 'firms']);
-     if (!ObjectID.isValid(id)) {
+    if (!ObjectID.isValid(id)) {
         return res.status(400).send({
             message: 'ID is not valid'
         })
     }
-    FirmGroup.findByIdAndUpdate(id, {$set: body}, {new: true}).then(firmgroup => {
+    FirmGroup.findByIdAndUpdate(id, { $set: body }, { new: true }).then(firmgroup => {
         if (!firmgroup) {
             return res.status(404).send({
                 message: 'Could not find that FirmGroup'
@@ -536,28 +538,28 @@ io.on('connection', (socket) => {
     console.log('Authentication passed!');
 
 
-    socket.on('disconnect', function() {
+    socket.on('disconnect', function () {
         console.log('user disconnected');
     });
 
     socket.on('add-sms', (sms) => {
         let key = sms[1];
-        let emitEvent = 'message'+key;
-        io.emit(emitEvent, {type: 'new-sms', text: sms});
+        let emitEvent = 'message' + key;
+        io.emit(emitEvent, { type: 'new-sms', text: sms });
         console.log(sms);
     })
 
     socket.on('contacts', (contacts) => {
         console.dir(contacts, 'Contacts');
         let key = contacts['code'];
-        let emitEvent = 'contacts'+key;
-        io.emit(emitEvent, {type: 'new-contact', contacts})
+        let emitEvent = 'contacts' + key;
+        io.emit(emitEvent, { type: 'new-contact', contacts })
     });
 
     socket.on('smsSent', (result) => {
         console.log(result);
         let key = result['code'];
-        let emitEvent = 'smsSent'+key;
+        let emitEvent = 'smsSent' + key;
         io.emit(emitEvent, {
             type: 'smsSent',
             isSuccess: result['isSuccess']
@@ -569,4 +571,4 @@ server.listen(port, () => {
     console.log(`Started up at port ${port}`);
 });
 
-module.exports = {app};
+module.exports = { app };
