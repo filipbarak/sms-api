@@ -113,9 +113,11 @@ app.post('/firm', authenticate, (req, res) => {
         _creator: req.user._id
     }).then(firmFound => {
         if (firmFound) {
-            return res.status(400).send({
-                message: 'Firm with that name or number already exists.'
-            })
+            if (firmFound.name === req.body.name || firmFound.number === req.body.number) {
+                return res.status(400).send({
+                    message: 'Firm with that name or number already exists.'
+                })
+            }
         }
         firm.save().then((firm) => {
             res.send(firm);
