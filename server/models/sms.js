@@ -13,27 +13,30 @@ var SmsSchema = new mongoose.Schema({
     numberTo: [{
         type: String,
         required: true
-    }],  
+    }],
     _creator: {
         type: mongoose.Schema.Types.ObjectId,
         required: true
     },
-    firms: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Firm' }]
+    isSent: {
+        type: Boolean
+    },
+    firms: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Firm' }],
 });
 
-SmsSchema.statics.findSmsByPhoneNumber = function(number) {
+SmsSchema.statics.findSmsByPhoneNumber = function (number) {
     var Sms = this;
-    
+
     return Sms.find({
         numberTo: number
     }).then((sms) => {
         if (!sms) {
-           return Promise.reject();
+            return Promise.reject();
         }
-       return Promise.resolve(sms);
+        return Promise.resolve(sms);
     })
 }
 
 var Sms = mongoose.model('Sms', SmsSchema);
 
-module.exports = {Sms};
+module.exports = { Sms };
