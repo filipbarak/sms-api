@@ -11,6 +11,9 @@ var FirmSchema = new mongoose.Schema({
         required: true,
         minlength: 1
     },
+    hasFirm: {
+        type: Boolean
+    },
     _creator: {
         type: mongoose.Schema.Types.ObjectId,
         required: true
@@ -20,4 +23,4 @@ var FirmSchema = new mongoose.Schema({
 
 var Firm = mongoose.model('Firm', FirmSchema);
 
-module.exports = {Firm};
+module.exports = { Firm };

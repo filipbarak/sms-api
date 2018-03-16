@@ -105,6 +105,7 @@ app.post('/firm', authenticate, (req, res) => {
     var firm = new Firm({
         name: req.body.name,
         number: req.body.number,
+        hasFirm: req.body.hasFirm,
         _creator: req.user._id
     });
 
