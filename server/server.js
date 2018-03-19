@@ -283,6 +283,7 @@ app.post('/sms', authenticate, (req, res) => {
         content: req.body.content,
         numberTo: req.body.numberTo,
         isSent: req.body.isSent,
+        createdAt: Date.now(),
         _creator: req.user._id // id of the user from the authenticate middleware
     });
     sms.save().then((sms) => {
