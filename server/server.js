@@ -127,8 +127,6 @@ app.post('/firm', authenticate, (req, res) => {
     });
 });
 
-app.
-
 //Use this only to sync contacts from Phone.
 app.post('/firmsmany', authenticate, (req, res) => {
     let firms = req.body.firms;
@@ -424,7 +422,7 @@ app.post('/users/login', (req, res) => {
         });
     }).catch((e) => {
         res.status(400).send({
-            message: 'Invalid username or password'
+            message: 'Invalid username or password...'
         });
     });
 });
