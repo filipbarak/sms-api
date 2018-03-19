@@ -596,6 +596,7 @@ io.on('connection', (socket) => {
         console.dir(contacts, 'Contacts');
         let key = contacts['code'];
         let emitEvent = 'contacts' + key;
+        console.log(JSON.stringify(emitEvent, null, 2));
         io.emit(emitEvent, { type: 'new-contact', contacts })
     });
 
