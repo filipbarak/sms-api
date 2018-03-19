@@ -127,6 +127,8 @@ app.post('/firm', authenticate, (req, res) => {
     });
 });
 
+app.
+
 //Use this only to sync contacts from Phone.
 app.post('/firmsmany', authenticate, (req, res) => {
     let firms = req.body.firms;
@@ -203,6 +205,27 @@ app.delete('/firm/:id', authenticate, (req, res) => {
     }, (e) => {
         res.status(400).send(e);
     });
+});
+
+app.patch('/firm/:id', authenticate, (req, res) => {
+    let id = req.params.id;
+    let body = _.pick(req.body, ['hasFirm']);
+    if (!ObjectID.isValid(id)) {
+        return res.status(400).send({
+            message: 'ID is not valid'
+        })
+    }
+
+    Firm.findByIdAndUpdate(id, { $set: body }, { new: true }).then(firm => {
+        if (!firm) {
+            return res.status(404).send({
+                message: 'Could not find that Firm'
+            })
+        }
+        res.send({ firm });
+    }).catch(e => {
+        res.status(400).send(e);
+    })
 });
 
 
@@ -400,7 +423,9 @@ app.post('/users/login', (req, res) => {
             });
         });
     }).catch((e) => {
-        res.status(400).send();
+        res.status(400).send({
+            message: 'Invalid username or password'
+        });
     });
 });
 

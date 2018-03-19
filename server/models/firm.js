@@ -12,7 +12,7 @@ var FirmSchema = new mongoose.Schema({
         minlength: 1
     },
     hasFirm: {
-        type: Boolean
+        type: String
     },
     _creator: {
         type: mongoose.Schema.Types.ObjectId,
