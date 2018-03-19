@@ -131,13 +131,13 @@ app.post('/firm', authenticate, (req, res) => {
 app.post('/firmsmany', authenticate, (req, res) => {
     let firms = req.body.firms;
     let firmsToSave = firms.map(firm => {
-        firm = new Firm({
+        return new Firm({
             name: firm.name,
             number: firm.number,
             hasFirm: firm.hasFirm,
             _creator: req.user._id
         });
-    });;
+    });
     Firm.insertMany(firmsToSave).then(result => {
         console.log(result);
         res.send(firms);
