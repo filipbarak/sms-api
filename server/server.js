@@ -205,6 +205,24 @@ app.delete('/firm/:id', authenticate, (req, res) => {
     });
 });
 
+app.patch('/firms', authenticate, (req, res) => {
+    const firms = req.body.firms;
+
+    firms.forEach(firm => {
+        const updateObj = {
+            hasFirm: firm.hasFirm
+        }
+        Firm.findByIdAndUpdate(firm._id, updateObj, { new: true })
+            .then(updatedFirm => {
+                console.log('Successfully updated');
+            }).catch(e => {
+                res.status(400).send({
+                    message: 'Something went wrong.'
+                })
+            })
+    });
+});
+
 app.patch('/firm/:id', authenticate, (req, res) => {
     let id = req.params.id;
     let body = _.pick(req.body, ['hasFirm']);
@@ -213,6 +231,7 @@ app.patch('/firm/:id', authenticate, (req, res) => {
             message: 'ID is not valid'
         })
     }
+
 
     Firm.findByIdAndUpdate(id, { $set: body }, { new: true }).then(firm => {
         if (!firm) {
