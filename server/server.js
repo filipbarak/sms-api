@@ -209,17 +209,18 @@ app.patch('/firms', authenticate, (req, res) => {
     const firms = req.body.firms;
 
     firms.forEach(firm => {
-        const updateObj = {
-            hasFirm: firm.hasFirm
-        }
+        const updateObj = { hasFirm: firm.hasFirm }
         Firm.findByIdAndUpdate(firm._id, updateObj, { new: true })
             .then(updatedFirm => {
-                console.log('Successfully updated');
+                console.log('Everything is okay');
             }).catch(e => {
                 res.status(400).send({
                     message: 'Something went wrong.'
                 })
             })
+    });
+    res.status(200).send({
+        message: `Updated all ${firms} `
     });
 });
 
