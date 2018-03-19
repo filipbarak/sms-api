@@ -130,16 +130,14 @@ app.post('/firm', authenticate, (req, res) => {
 //Use this only to sync contacts from Phone.
 app.post('/firmsmany', authenticate, (req, res) => {
     let firms = req.body.firms;
-    let firmsToSave = [];
-    firms.map(firm => {
+    let firmsToSave = firms.map(firm => {
         firm = new Firm({
             name: firm.name,
             number: firm.number,
+            hasFirm: firm.hasFirm,
             _creator: req.user._id
         });
-        firmsToSave.push(firm);
-    });
-
+    });;
     Firm.insertMany(firmsToSave).then(result => {
         console.log(result);
         res.send(firms);
