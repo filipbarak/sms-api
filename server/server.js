@@ -426,22 +426,42 @@ app.post('/users/login', (req, res) => {
     var body = _.pick(req.body, ['email', 'password']);
 
     User.findByCredentials(body.email, body.password).then((user) => {
+
+        if (!user) {
+            return res.status(401).send({
+                message: 'Invalid username or password'
+            });
+        }
+
         if (!user.isVerified) {
             return res.status(401).send({
                 message: 'User is not verified'
             });
         }
+
+        //Check if user is not logging in for the first time
+        if (user.uniqueKey && user.isVerified) {
+            return user.generateAuthToken().then((token) => {
+                res.header('x-auth', token).send({
+                    user,
+                    'token': token,
+                    'key': user.uniqueKey
+                });
+            });
+        }
+
         user.uniqueKey = randomize('Aa0', 5);
         return user.generateAuthToken().then((token) => {
             res.header('x-auth', token).send({
                 user,
                 'token': token,
-                'key': user.uniqueKey
+                'key': user.uniqueKey,
+                'initialLogin': true
             });
         });
     }).catch((e) => {
         res.status(400).send({
-            message: 'Invalid username or password...'
+            message: 'Something went wrong with the request.'
         });
     });
 });
@@ -607,6 +627,14 @@ io.on('connection', (socket) => {
         io.emit(emitEvent, {
             type: 'smsSent',
             isSuccess: result['isSuccess']
+        })
+    });
+
+    socket.on('initConnection', (connection) => {
+        let key = conection['code'];
+        let emitEvent = 'initConnection' + key;
+        io.emit(emitEvent, {
+            success: `Успешно се поврзавте со кодот ${key}`
         })
     });
 });
