@@ -33,8 +33,7 @@ var UserSchema = new mongoose.Schema({
         }
     }],
     uniqueKey: {
-        type: String,
-        required: true
+        type: String
     },
     isVerified: {
         type: Boolean,
@@ -117,8 +116,6 @@ UserSchema.statics.findByCredentials = function (email, password) {
 
 UserSchema.pre('save', function (next) {
     var user = this;
-
-    user.uniqueKey = randomize('Aa0', 5);
 
     if (user.isModified('password')) {
         bcrypt.genSalt(10, (err, salt) => {

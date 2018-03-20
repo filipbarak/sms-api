@@ -397,7 +397,6 @@ app.post('/users', (req, res) => {
             });
         }
 
-        newUser.uniqueKey = randomize('Aa0', 5);
         newUser.isVerified = false;
         newUser.tempHash = rand;
         newUser.save().then(() => {
@@ -441,6 +440,7 @@ app.post('/users/login', (req, res) => {
 
         //Check if user is not logging in for the first time
         if (user.uniqueKey && user.isVerified) {
+            console.log('User has unique key here...')
             return user.generateAuthToken().then((token) => {
                 res.header('x-auth', token).send({
                     user,
@@ -448,17 +448,19 @@ app.post('/users/login', (req, res) => {
                     'key': user.uniqueKey
                 });
             });
+        } else if (!user.uniqueKey && user.isVerified) {
+            user.uniqueKey = randomize('Aa0', 5);
+            return user.generateAuthToken().then((token) => {
+                console.log('User is newly logged in.')
+                res.header('x-auth', token).send({
+                    user,
+                    'token': token,
+                    'key': user.uniqueKey,
+                    'initialLogin': true
+                });
+            });
         }
 
-        user.uniqueKey = randomize('Aa0', 5);
-        return user.generateAuthToken().then((token) => {
-            res.header('x-auth', token).send({
-                user,
-                'token': token,
-                'key': user.uniqueKey,
-                'initialLogin': true
-            });
-        });
     }).catch((e) => {
         res.status(400).send({
             message: 'Something went wrong with the request.'
@@ -631,7 +633,8 @@ io.on('connection', (socket) => {
     });
 
     socket.on('initConnection', (connection) => {
-        let key = conection['code'];
+        console.log('LISTENING NOW....')
+        let key = connection['code'];
         let emitEvent = 'initConnection' + key;
         io.emit(emitEvent, {
             success: `Успешно се поврзавте со кодот ${key}`
