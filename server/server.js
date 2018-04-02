@@ -497,6 +497,7 @@ app.post('/firmgroup', authenticate, (req, res) => {
     let group = new FirmGroup({
         title: req.body.title,
         firms: req.body.firms,
+        isFirm: req.body.firms || false,
         _creator: req.user._id
     });
 
@@ -517,6 +518,46 @@ app.post('/firmgroup', authenticate, (req, res) => {
                 })
             })
         });
+});
+
+app.get('/groups', authenticate, (req, res) => {
+    FirmGroup.find({ _creator: req.user._id, isFirm: false })
+        .then(firmgroup => {
+            if (!firmgroup) {
+                return res.status(400).send({
+                    e: 'Could not find that Group'
+                })
+            }
+
+            res.status(200).send({ firmgroup })
+        }).catch(e => {
+            res.status(400).send({ 
+                message: "Something went wrong",
+                e
+             })
+        })
+});
+
+app.get('/group/:id', authenticate, (req, res) => {
+    let id = req.params.id;
+    if (!ObjectID.isValid(id)) {
+        return res.status(400).send({
+            message: 'ID is not valid'
+        })
+    }
+    FirmGroup.find({_id: id, isFirm: false}).then(firmgroup => {
+        if (!firmgroup) {
+            return res.status(400).send({
+                message: 'Group not found'
+            })
+        }
+        res.send(firmgroup);
+    }).catch(e => {
+        res.status(400).send({
+            message: "There was a problem reaching the server",
+            e
+        });
+    });
 });
 
 app.get('/firmgroup', authenticate, (req, res) => {

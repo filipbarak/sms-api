@@ -16,6 +16,9 @@ var FirmGroupSchema = new mongoose.Schema({
             required: true
         }
     }],
+    isFirm: {
+        type: Boolean
+    },
     _creator: {
         type: mongoose.Schema.Types.ObjectId,
         required: true
