@@ -497,7 +497,7 @@ app.post('/firmgroup', authenticate, (req, res) => {
     let group = new FirmGroup({
         title: req.body.title,
         firms: req.body.firms,
-        isFirm: req.body.firms || false,
+        isFirm: req.body.isFirm || false,
         _creator: req.user._id
     });
 
