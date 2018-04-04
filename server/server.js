@@ -224,7 +224,7 @@ app.patch('/firms', authenticate, (req, res) => {
 
 app.patch('/firm/:id', authenticate, (req, res) => {
     let id = req.params.id;
-    let body = _.pick(req.body, ['hasFirm']);
+    let body = _.pick(req.body, ['hasFirm', 'name', 'number']);
     if (!ObjectID.isValid(id)) {
         return res.status(400).send({
             message: 'ID is not valid'
